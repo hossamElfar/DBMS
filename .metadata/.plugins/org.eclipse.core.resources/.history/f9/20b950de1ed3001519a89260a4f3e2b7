@@ -1,0 +1,66 @@
+package teamname;
+
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
+import java.util.Hashtable;
+
+import javax.swing.text.html.HTMLDocument.Iterator;
+
+public class Table implements Serializable {
+	String name;
+	Hashtable<String, Object> type;
+	String refernces;
+
+	public Table(String name, Hashtable<String, String> NameType,Hashtable<String, String> refrences, String key) {
+		this.name = name;
+		this.type = type;
+		this.refernces = refernces;
+	}
+	
+	public void saveTable() throws IOException{
+		String fileLocation = ""; //To be Modified
+		FileOutputStream fileOut =
+		         new FileOutputStream(fileLocation);
+		ObjectOutputStream os = new ObjectOutputStream(fileOut);
+		os.writeObject(this);
+		
+	}
+	
+	public void insertIntoTable(Hashtable<String,Object> data){
+		this.type.putAll(data);
+	}
+	public Iterator select(String firstField,String firstAtt,String operator,String secondField,String secondAtt) {
+	Hashtable<String, Object> ret = new Hashtable<String, Object>();	
+	
+	
+	
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public Hashtable<String, Object> getType() {
+		return type;
+	}
+
+	public void setType(Hashtable<String, Object> type) {
+		this.type = type;
+	}
+
+	public String getRefernces() {
+		return refernces;
+	}
+
+	public void setRefernces(String refernces) {
+		this.refernces = refernces;
+	}
+
+}

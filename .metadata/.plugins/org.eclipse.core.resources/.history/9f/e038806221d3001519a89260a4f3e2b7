@@ -1,18 +1,11 @@
 package teamname;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Iterator;
 
-class DBAppException extends Exception implements Serializable{
+class DBAppException extends Exception {
 
 }
 
@@ -24,46 +17,26 @@ public class DBApp {
 	ArrayList<Table> tables;
 	ArrayList<String> names;
 
-	public void init() throws IOException, ClassNotFoundException {
-		File x = new File("array.ser");
-		if(x.exists()){
-		 FileInputStream fileIn = new FileInputStream("array.ser");
-         ObjectInputStream in = new ObjectInputStream(fileIn);
-         tables = (ArrayList<Table>) in.readObject();
-         in.close();
-         fileIn.close();	
-		}else{
-			tables = new ArrayList<Table>();
-			String fileLocation = "array.ser"; //To be Modified
-			FileOutputStream fileOut =
-			         new FileOutputStream(fileLocation);
-			ObjectOutputStream os = new ObjectOutputStream(fileOut);
-			os.writeObject(tables);
-		}
+	public void init() {
+		tables = new ArrayList<Table>();
+		names = new ArrayList<String>();
 	}
 
 	public void createTable(String strTableName,
 			Hashtable<String, String> htblColNameType,
 			Hashtable<String, String> htblColNameRefs, String strKeyColName)
-			throws DBAppException, IOException, ClassNotFoundException {
-		boolean flag = false;
-		for(int i =0 ;i<tables.size();i++){
-			if(tables.get(i).name.equals(strTableName)){
-				flag = true;
-				break;
-			}
-		}
-		if(!flag){
-			Table t1=new Table(strTableName, htblColNameType, htblColNameRefs, strKeyColName);
-			tables.add(t1);
-			String fileLocation = "array.ser"; //To be Modified
-			FileOutputStream fileOut =
-			         new FileOutputStream(fileLocation);
-			ObjectOutputStream os = new ObjectOutputStream(fileOut);
-			os.writeObject(tables);
-			System.out.println("The table "+strTableName+" created Succesfully");
+			throws DBAppException, IOException {
+		if (!this.names.contains(strTableName)) {
+			Table t1 = new Table(strTableName, htblColNameType,
+					htblColNameRefs, strKeyColName);
+			this.tables.add(t1);
+			this.names.add(t1.name);
+			t1.saveTable();
+			System.out.println("Table " + strTableName
+					+ " created Succesfuly !!!");
 		}else{
-			System.out.println("The table "+strTableName+" is Already Exists");
+			System.out.println("Table " + strTableName
+					+ " Already exists!!!");
 		}
 	}
 
@@ -95,7 +68,7 @@ public class DBApp {
 	}
 
 	public static void main(String[] args) throws DBAppException,
-			DBEngineException, IOException, ClassNotFoundException {
+			DBEngineException, IOException {
 		// creat a new DBApp
 		DBApp myDB = new DBApp();
 

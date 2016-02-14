@@ -110,7 +110,7 @@ public class DBApp {
 
 		Hashtable<String, String> fTblColNameRefs = new Hashtable<String, String>();
 
-		myDB.createTable("Faculty", fTblColNameType, fTblColNameRefs, "ID");
+		myDB.createTable("Faculty22", fTblColNameType, fTblColNameRefs, "ID");
 
 		// creating table "Major"
 

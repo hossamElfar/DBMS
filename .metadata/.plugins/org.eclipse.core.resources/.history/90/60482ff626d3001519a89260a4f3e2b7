@@ -61,7 +61,6 @@ public class DBApp {
 			         new FileOutputStream(fileLocation);
 			ObjectOutputStream os = new ObjectOutputStream(fileOut);
 			os.writeObject(tables);
-			System.out.println("The table "+strTableName+" created Succesfully");
 		}else{
 			System.out.println("The table "+strTableName+" is Already Exists");
 		}
