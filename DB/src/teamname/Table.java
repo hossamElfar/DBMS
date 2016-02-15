@@ -5,6 +5,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Hashtable;
 
 import javax.swing.text.html.HTMLDocument.Iterator;
@@ -14,17 +15,20 @@ public class Table implements Serializable {
 	Hashtable<String, String> NameType;
 	Hashtable<String, String> refrences;
 	String key;
-	Hashtable<String, Object> main ;
+	int pages;
 	public Table(String name, Hashtable<String, String> nameType,
 			Hashtable<String, String> refrences, String key) {
-		main = new Hashtable<String, Object>();
+		pages = 0 ;
+		Hashtable<String, Object> main = new Hashtable<String, Object>();
 		this.name = name;
 		NameType = nameType;
 		this.refrences = refrences;
 		this.key = key;
 	}
 
-	
+	public void increment(){
+		this.pages++;
+	}
 	
 	public String getName() {
 		return name;
@@ -35,7 +39,8 @@ public class Table implements Serializable {
 	public void setName(String name) {
 		this.name = name;
 	}
-
+   
+	
 
 
 	public Hashtable<String, String> getNameType() {
@@ -71,6 +76,8 @@ public class Table implements Serializable {
 	public void setKey(String key) {
 		this.key = key;
 	}
+	
+	
 
 
 

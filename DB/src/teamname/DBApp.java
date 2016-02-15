@@ -8,9 +8,14 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Hashtable;
 import java.util.Iterator;
+
+import javax.xml.crypto.Data;
 
 class DBAppException extends Exception implements Serializable{
 
@@ -73,9 +78,95 @@ public class DBApp {
 	}
 
 	public void insertIntoTable(String strTableName,
-			Hashtable<String, Object> htblColNameValue) throws DBAppException {
+			Hashtable<String, Object> htblColNameValue) throws DBAppException, ClassNotFoundException, IOException {
+		Table temp =null;
+		boolean flag = false;
+		for (int i = 0; i < tables.size(); i++) {
+			if(tables.get(i).name.equals(strTableName)){
+				temp = tables.get(i);
+				flag = true;
+			}
+		}
+		if(flag){
+			DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+			Date date = new Date();
+			System.out.println(dateFormat.format(date));
+			htblColNameValue.put("TouchDate", dateFormat.format(date));
+			saveRecords(strTableName,temp.pages , htblColNameValue);
+			System.out.println("The record saved into the table "+strTableName);
+		}else{
+			System.out.println("The table "+strTableName+" is not exist");
 
+		}
+		
+		  
 	}
+	
+	public void saveRecords(String name,int page,Hashtable<String, Object> record) throws ClassNotFoundException, IOException{
+		String nameofpage = name +page;
+		Page content=null;
+		if(page!=0){
+		content = retrivePage(nameofpage);
+		if(content.data.size()==20){ // To be modified
+			page++;
+			nameofpage=name+page;
+			for (int i = 0; i < tables.size(); i++) {
+				if(tables.get(i).name.equals(name)){
+					tables.get(i).increment();
+				}
+			}
+				Page x = new Page(nameofpage);
+				x.data.add(record);
+				String fileLocation = nameofpage+".ser"; //To be Modified
+				FileOutputStream fileOut =
+				         new FileOutputStream(fileLocation);
+				ObjectOutputStream os = new ObjectOutputStream(fileOut);
+				os.writeObject(x);
+				System.out.println("The page "+nameofpage+" created Succesfully");
+			
+		}else{
+			
+			Page y = retrivePage(nameofpage);
+			y.data.add(record);
+			String fileLocation = nameofpage+".ser"; //To be Modified
+			FileOutputStream fileOut =
+			         new FileOutputStream(fileLocation);
+			ObjectOutputStream os = new ObjectOutputStream(fileOut);
+			os.writeObject(y);
+			}}
+		else{
+			page++;
+			nameofpage=name+page;
+			for (int i = 0; i < tables.size(); i++) {
+				if(tables.get(i).name.equals(name)){
+					tables.get(i).increment();
+				}
+			}
+				Page x = new Page(nameofpage);
+				x.data.add(record);
+				String fileLocation = nameofpage+".ser"; //To be Modified
+				FileOutputStream fileOut =
+				         new FileOutputStream(fileLocation);
+				ObjectOutputStream os = new ObjectOutputStream(fileOut);
+				os.writeObject(x);
+				System.out.println("The page "+nameofpage+" created Succesfully");
+		}
+	}
+	public Page retrivePage(String name) throws IOException, ClassNotFoundException{
+		Page array = null;
+		File temp = new File(name+".ser");
+		if(temp.exists()){
+			 FileInputStream fileIn = new FileInputStream(name+".ser");
+	         ObjectInputStream in = new ObjectInputStream(fileIn);
+	         array = (Page) in.readObject();
+	         in.close();
+	         fileIn.close();
+		}
+		
+			
+         return array;
+	}
+	
 
 	public void updateTable(String strTableName, String strKey,
 			Hashtable<String, Object> htblColNameValue) throws DBAppException {
