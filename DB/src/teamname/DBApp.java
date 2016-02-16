@@ -36,16 +36,16 @@ public class DBApp {
     ArrayList<String> pagesNumber;
 	public void init() throws IOException, ClassNotFoundException {
 		pagesNumber=new ArrayList<String>();
-		File x = new File("array.ser");
+		File x = new File("classes/array.ser");
 		if(x.exists()){
-		 FileInputStream fileIn = new FileInputStream("array.ser");
+		 FileInputStream fileIn = new FileInputStream("classes/array.ser");
          ObjectInputStream in = new ObjectInputStream(fileIn);
          tablesTemp = (ArrayList<Table>) in.readObject();
          in.close();
          fileIn.close();	
 		}else{
 			tablesTemp = new ArrayList<Table>();
-			String fileLocation = "array.ser"; //To be Modified
+			String fileLocation = "classes/array.ser"; //To be Modified
 			FileOutputStream fileOut =
 			         new FileOutputStream(fileLocation);
 			ObjectOutputStream os = new ObjectOutputStream(fileOut);
@@ -53,16 +53,16 @@ public class DBApp {
 		}
 	}
 	public ArrayList<Table> retrivetable() throws IOException, ClassNotFoundException{
-		FileInputStream fileIn = new FileInputStream("array.ser");
+		FileInputStream fileIn = new FileInputStream("classes/array.ser");
         ObjectInputStream in = new ObjectInputStream(fileIn);
-       ArrayList<Table> t = (ArrayList<Table>) in.readObject();
+        ArrayList<Table> t = (ArrayList<Table>) in.readObject();
         in.close();
         fileIn.close();	
 		return t;
 		
 	}
 	public void savetable(ArrayList<Table> t) throws IOException{
-		String fileLocation = "array.ser"; //To be Modified
+		String fileLocation = "classes/array.ser"; //To be Modified
 		FileOutputStream fileOut =
 		         new FileOutputStream(fileLocation);
 		ObjectOutputStream os = new ObjectOutputStream(fileOut);
@@ -92,7 +92,7 @@ public void increment(String tbname) throws ClassNotFoundException, IOException{
 		if(!flag){
 			Table t1=new Table(strTableName, htblColNameType, htblColNameRefs, strKeyColName);
 			tables.add(t1);
-			String fileLocation = "array.ser"; //To be Modified
+			String fileLocation = "classes/array.ser"; //To be Modified
 			FileOutputStream fileOut =
 			         new FileOutputStream(fileLocation);
 			ObjectOutputStream os = new ObjectOutputStream(fileOut);
@@ -135,14 +135,14 @@ public void increment(String tbname) throws ClassNotFoundException, IOException{
 	}
 	
 	public void saveRecords(String name,int page,Hashtable<String, Object> record) throws ClassNotFoundException, IOException{
-		String nameofpage = name +page;
+		String nameofpage = "classes/"+name +page;
 		Page content=null;
 		ArrayList<Table> tables = retrivetable();
 		if(page!=0){
 		content = retrivePage(nameofpage);
 		Properties prop = new Properties();
 		InputStream input = null;
-		input = new FileInputStream("DBApp.properties");
+		input = new FileInputStream("config/DBApp.properties");
 		prop.load(input);
 		 String value = prop.getProperty("MaximumRowsCountinPage");
 		 int finalValue = Integer.parseInt(value);
@@ -156,7 +156,7 @@ public void increment(String tbname) throws ClassNotFoundException, IOException{
 			}
 				Page x = new Page(nameofpage);
 				x.data.add(record);
-				String fileLocation = nameofpage+".ser"; //To be Modified
+				String fileLocation = "classes/"+nameofpage+".ser"; //To be Modified
 				FileOutputStream fileOut =
 				         new FileOutputStream(fileLocation);
 				ObjectOutputStream os = new ObjectOutputStream(fileOut);
@@ -184,7 +184,7 @@ public void increment(String tbname) throws ClassNotFoundException, IOException{
 			}
 				Page x = new Page(nameofpage);
 				x.data.add(record);
-				String fileLocation = nameofpage+".ser"; //To be Modified
+				String fileLocation = "classes/"+nameofpage+".ser"; //To be Modified
 				FileOutputStream fileOut =
 				         new FileOutputStream(fileLocation);
 				ObjectOutputStream os = new ObjectOutputStream(fileOut);
@@ -228,7 +228,7 @@ public void increment(String tbname) throws ClassNotFoundException, IOException{
 		ArrayList<Object> values = new ArrayList<Object>(2);
 		ArrayList<Table> tables = retrivetable();
 		
-		 FileInputStream fileIn = new FileInputStream("array.ser");
+		 FileInputStream fileIn = new FileInputStream("classes/array.ser");
          ObjectInputStream in = new ObjectInputStream(fileIn);
        // ArrayList<Table> ttt = (ArrayList<Table>) in.readObject();
          in.close();
@@ -256,7 +256,7 @@ public void increment(String tbname) throws ClassNotFoundException, IOException{
 			//System.out.println(numberOfPages);
 			for(int i =0 ;i<numberOfPages;i++){
 				//System.out.println("test1");
-				Page p= retrivePage(strTable+(i+1));
+				Page p= retrivePage("classes/"+strTable+(i+1));
 				for(int j = 0;j<p.data.size();j++){
 					Hashtable<String, Object> temp = p.data.get(j);
 					  //System.out.println("test");
@@ -293,7 +293,7 @@ public void increment(String tbname) throws ClassNotFoundException, IOException{
 		myDB.init();
 
 		// creating table "Faculty"
-/*
+
 		Hashtable<String, String> fTblColNameType = new Hashtable<String, String>();
 		fTblColNameType.put("ID", "Integer");
 		fTblColNameType.put("Name", "String");
@@ -441,7 +441,7 @@ public void increment(String tbname) throws ClassNotFoundException, IOException{
 			myDB.insertIntoTable("Student", sttblColNameValueI);
 			// changed it to student instead of course
 		}
-*/
+
 		// selecting
 		//ArrayList<Table> tables = myDB.retrivetable();
 		//for (int i = 0; i < tables.size(); i++) {
@@ -449,8 +449,7 @@ public void increment(String tbname) throws ClassNotFoundException, IOException{
 			//System.out.println(tables.get(i).name);
 			
 	//	}
-
-		Hashtable<String, Object> stblColNameValue = new Hashtable<String, Object>();
+        Hashtable<String, Object> stblColNameValue = new Hashtable<String, Object>();
 		stblColNameValue.put("ID", Integer.valueOf("550"));
 		stblColNameValue.put("Age", Integer.valueOf("20"));
 
@@ -478,7 +477,9 @@ public void increment(String tbname) throws ClassNotFoundException, IOException{
 		while (myIt2.hasNext()) {
 			System.out.println(myIt2.next());
 		}
-		
+		ArrayList<Table> csv = myDB.retrivetable();
+		csvWriter csWriter = new csvWriter(csv);
+		csWriter.write("data/meta.csv");
 	}
 
 }
