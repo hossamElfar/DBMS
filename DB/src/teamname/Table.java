@@ -18,7 +18,7 @@ public class Table implements Serializable {
 	int pages;
 	public Table(String name, Hashtable<String, String> nameType,
 			Hashtable<String, String> refrences, String key) {
-		pages = 0 ;
+		pages=0;
 		Hashtable<String, Object> main = new Hashtable<String, Object>();
 		this.name = name;
 		NameType = nameType;
@@ -26,9 +26,7 @@ public class Table implements Serializable {
 		this.key = key;
 	}
 
-	public void increment(){
-		this.pages++;
-	}
+	
 	
 	public String getName() {
 		return name;

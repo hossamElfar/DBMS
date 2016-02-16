@@ -5,15 +5,20 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.OutputStream;
 import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.Properties;
+import java.util.Set;
 
 import javax.xml.crypto.Data;
 
@@ -26,31 +31,57 @@ class DBEngineException extends Exception {
 }
 
 public class DBApp {
-	ArrayList<Table> tables;
+	ArrayList<Table> tablesTemp;
 	ArrayList<String> names;
-
+    ArrayList<String> pagesNumber;
 	public void init() throws IOException, ClassNotFoundException {
+		pagesNumber=new ArrayList<String>();
 		File x = new File("array.ser");
 		if(x.exists()){
 		 FileInputStream fileIn = new FileInputStream("array.ser");
          ObjectInputStream in = new ObjectInputStream(fileIn);
-         tables = (ArrayList<Table>) in.readObject();
+         tablesTemp = (ArrayList<Table>) in.readObject();
          in.close();
          fileIn.close();	
 		}else{
-			tables = new ArrayList<Table>();
+			tablesTemp = new ArrayList<Table>();
 			String fileLocation = "array.ser"; //To be Modified
 			FileOutputStream fileOut =
 			         new FileOutputStream(fileLocation);
 			ObjectOutputStream os = new ObjectOutputStream(fileOut);
-			os.writeObject(tables);
+			os.writeObject(tablesTemp);
 		}
 	}
-
+	public ArrayList<Table> retrivetable() throws IOException, ClassNotFoundException{
+		FileInputStream fileIn = new FileInputStream("array.ser");
+        ObjectInputStream in = new ObjectInputStream(fileIn);
+       ArrayList<Table> t = (ArrayList<Table>) in.readObject();
+        in.close();
+        fileIn.close();	
+		return t;
+		
+	}
+	public void savetable(ArrayList<Table> t) throws IOException{
+		String fileLocation = "array.ser"; //To be Modified
+		FileOutputStream fileOut =
+		         new FileOutputStream(fileLocation);
+		ObjectOutputStream os = new ObjectOutputStream(fileOut);
+		os.writeObject(t);
+	}
+public void increment(String tbname) throws ClassNotFoundException, IOException{
+	ArrayList<Table> t = retrivetable();
+	for (int i = 0; i < t.size(); i++) {
+		if(t.get(i).name.equals(tbname))
+			t.get(i).pages=t.get(i).pages+1;
+		
+	}
+	savetable(t);
+}
 	public void createTable(String strTableName,
 			Hashtable<String, String> htblColNameType,
 			Hashtable<String, String> htblColNameRefs, String strKeyColName)
 			throws DBAppException, IOException, ClassNotFoundException {
+		ArrayList<Table> tables = retrivetable();
 		boolean flag = false;
 		for(int i =0 ;i<tables.size();i++){
 			if(tables.get(i).name.equals(strTableName)){
@@ -81,6 +112,7 @@ public class DBApp {
 			Hashtable<String, Object> htblColNameValue) throws DBAppException, ClassNotFoundException, IOException {
 		Table temp =null;
 		boolean flag = false;
+		ArrayList<Table> tables = retrivetable();
 		for (int i = 0; i < tables.size(); i++) {
 			if(tables.get(i).name.equals(strTableName)){
 				temp = tables.get(i);
@@ -105,14 +137,21 @@ public class DBApp {
 	public void saveRecords(String name,int page,Hashtable<String, Object> record) throws ClassNotFoundException, IOException{
 		String nameofpage = name +page;
 		Page content=null;
+		ArrayList<Table> tables = retrivetable();
 		if(page!=0){
 		content = retrivePage(nameofpage);
-		if(content.data.size()==20){ // To be modified
+		Properties prop = new Properties();
+		InputStream input = null;
+		input = new FileInputStream("DBApp.properties");
+		prop.load(input);
+		 String value = prop.getProperty("MaximumRowsCountinPage");
+		 int finalValue = Integer.parseInt(value);
+		if(content.data.size()==finalValue){ // To be modified
 			page++;
 			nameofpage=name+page;
 			for (int i = 0; i < tables.size(); i++) {
 				if(tables.get(i).name.equals(name)){
-					tables.get(i).increment();
+					increment(name);
 				}
 			}
 				Page x = new Page(nameofpage);
@@ -135,11 +174,12 @@ public class DBApp {
 			os.writeObject(y);
 			}}
 		else{
+			
 			page++;
 			nameofpage=name+page;
 			for (int i = 0; i < tables.size(); i++) {
 				if(tables.get(i).name.equals(name)){
-					tables.get(i).increment();
+					increment(name);
 				}
 			}
 				Page x = new Page(nameofpage);
@@ -181,8 +221,67 @@ public class DBApp {
 
 	public Iterator selectFromTable(String strTable,
 			Hashtable<String, Object> htblColNameValue, String strOperator)
-			throws DBEngineException {
-		return null;
+			throws DBEngineException, ClassNotFoundException, IOException {
+		
+		ArrayList<Hashtable<String, Object>> a1 = new ArrayList<Hashtable<String,Object>>();
+		ArrayList<String> types = new ArrayList<String>(2);
+		ArrayList<Object> values = new ArrayList<Object>(2);
+		ArrayList<Table> tables = retrivetable();
+		
+		 FileInputStream fileIn = new FileInputStream("array.ser");
+         ObjectInputStream in = new ObjectInputStream(fileIn);
+       // ArrayList<Table> ttt = (ArrayList<Table>) in.readObject();
+         in.close();
+         fileIn.close();
+		
+		Table table = null ;
+		boolean flag = false;
+		for(int i =0 ; i<tables.size();i++){
+			if(tables.get(i).name.equals(strTable)){
+				table = tables.get(i);
+				flag = true;
+			}
+		}
+		if(flag){
+			
+			 Enumeration e = htblColNameValue.keys();
+			// System.out.println(e.);
+			    while (e.hasMoreElements()) {
+			      String key = (String) e.nextElement();
+			      //System.out.println(key);
+			      types.add(key);
+			      values.add(htblColNameValue.get(key));
+			    }
+			int numberOfPages = table.pages;
+			//System.out.println(numberOfPages);
+			for(int i =0 ;i<numberOfPages;i++){
+				//System.out.println("test1");
+				Page p= retrivePage(strTable+(i+1));
+				for(int j = 0;j<p.data.size();j++){
+					Hashtable<String, Object> temp = p.data.get(j);
+					  //System.out.println("test");
+						if(strOperator.equals("AND")){
+							//System.out.println("test AND");
+							if(((p.data.get(j).get(types.get(0)).equals(values.get(0)))) &&(p.data.get(j).get(types.get(1)).equals(values.get(1)))) {
+								a1.add(p.data.get(j));
+							}
+						}else{
+							if(((p.data.get(j).get(types.get(0)).equals(values.get(0)))) || (p.data.get(j).get(types.get(1)).equals(values.get(1))))  {
+                            	a1.add(p.data.get(j));	
+							}
+						}
+						
+		            
+				}
+				
+			}
+		}else{
+			System.out.println("The table "+strTable+" is Not Exist");
+		}
+		//Page p= retrivePage(strTable+"1");
+		
+		Iterator it = a1.iterator();
+		return it;
 	}
 
 	public static void main(String[] args) throws DBAppException,
@@ -194,7 +293,7 @@ public class DBApp {
 		myDB.init();
 
 		// creating table "Faculty"
-
+/*
 		Hashtable<String, String> fTblColNameType = new Hashtable<String, String>();
 		fTblColNameType.put("ID", "Integer");
 		fTblColNameType.put("Name", "String");
@@ -342,8 +441,14 @@ public class DBApp {
 			myDB.insertIntoTable("Student", sttblColNameValueI);
 			// changed it to student instead of course
 		}
-
+*/
 		// selecting
+		//ArrayList<Table> tables = myDB.retrivetable();
+		//for (int i = 0; i < tables.size(); i++) {
+			//System.out.println(tables.get(i).pages);
+			//System.out.println(tables.get(i).name);
+			
+	//	}
 
 		Hashtable<String, Object> stblColNameValue = new Hashtable<String, Object>();
 		stblColNameValue.put("ID", Integer.valueOf("550"));
@@ -371,8 +476,9 @@ public class DBApp {
 		long totalTime2 = endTime - startTime;
 		System.out.println(totalTime2);
 		while (myIt2.hasNext()) {
-			System.out.println(myIt.next());
+			System.out.println(myIt2.next());
 		}
+		
 	}
 
 }
