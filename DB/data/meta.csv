@@ -1,0 +1,16 @@
+Faculty, Name ,String ,ID, false,null
+Faculty, ID ,Integer ,ID, false,null
+Course, Semester ,Integer ,ID, false,null
+Course, Name ,String ,ID, false,null
+Course, Code ,String ,ID, false,null
+Course, Major_ID ,Integer ,ID, false,Major.ID
+Course, Hours ,Integer ,ID, false,null
+Course, ID ,Integer ,ID, false,null
+Student, Last_Name ,String ,ID, false,null
+Student, Age ,Integer ,ID, false,null
+Student, First_Name ,String ,ID, false,null
+Student, GPA ,Double ,ID, false,null
+Student, ID ,Integer ,ID, false,null
+Student_in_Course, Student_ID ,Integer ,ID, false,Student.ID
+Student_in_Course, Course_ID ,Integer ,ID, false,Course.ID
+Student_in_Course, ID ,Integer ,ID, false,null

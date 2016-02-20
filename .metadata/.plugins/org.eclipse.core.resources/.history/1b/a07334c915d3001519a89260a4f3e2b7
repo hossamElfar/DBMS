@@ -1,0 +1,54 @@
+package teamname;
+
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
+import java.util.Hashtable;
+
+public class Table implements Serializable {
+	String name;
+	Hashtable<String, String> type;
+	String refernces;
+
+	public Table(String name, Hashtable<String, String> type, String refernces) {
+		this.name = name;
+		this.type = type;
+		this.refernces = refernces;
+	}
+	
+	public boolean saveTable() throws IOException{
+		String fileLocation = ""; //To be Modified
+		FileOutputStream fileOut =
+		         new FileOutputStream(fileLocation);
+		ObjectOutputStream os = new ObjectOutputStream(fileOut);
+		os.writeObject(this);
+		return true ;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public Hashtable<String, String> getType() {
+		return type;
+	}
+
+	public void setType(Hashtable<String, String> type) {
+		this.type = type;
+	}
+
+	public String getRefernces() {
+		return refernces;
+	}
+
+	public void setRefernces(String refernces) {
+		this.refernces = refernces;
+	}
+
+}
