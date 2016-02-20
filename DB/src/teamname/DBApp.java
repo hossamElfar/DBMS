@@ -209,13 +209,138 @@ public void increment(String tbname) throws ClassNotFoundException, IOException{
 	
 
 	public void updateTable(String strTableName, String strKey,
-			Hashtable<String, Object> htblColNameValue) throws DBAppException {
-
+			Hashtable<String, Object> htblColNameValue) throws DBAppException, IOException, ClassNotFoundException {
+	
+        ArrayList<Table> tables = retrivetable();
+        String key = null;
+		Table table = null ;
+		int numberOfPages = 0;
+		boolean flag = false;
+		for(int i =0 ; i<tables.size();i++){
+			if(tables.get(i).name.equals(strTableName)){
+				table = tables.get(i);
+				key = table.key;
+				numberOfPages= table.pages;
+				flag = true;
+			}
+		}
+		if(flag){
+			
+			for (int i = 0; i < numberOfPages; i++) {
+				Page p= retrivePage("classes/"+strTableName+""+(i+1));
+				for(int j = 0;j<p.data.size();j++){
+					Hashtable<String, Object> temp = p.data.get(j);
+					  //System.out.println("test");
+					
+					String s = ""+temp.get(key);
+					//System.out.println(s+" : "+strKey);
+					if(s.equals(strKey)){
+						
+						System.out.println("Test");
+						p.data.remove(j);
+						p.data.add(j,htblColNameValue);
+						System.out.println(p.data.get(j).toString());
+						String fileLocation = "classes/"+strTableName+(i+1)+".ser"; //To be Modified
+						System.out.println(fileLocation);
+						FileOutputStream fileOut =
+						         new FileOutputStream(fileLocation);
+						ObjectOutputStream os = new ObjectOutputStream(fileOut);
+						os.writeObject(p);
+						
+						os.close();
+						fileOut.close();
+						
+					}
+						
+		            
+				}
+			}
+			
+		}else{
+			System.out.println("The table "+strTableName+" Doesn,t exist");
+		}
+		
+           
 	}
 
 	public void deleteFromTable(String strTableName,
 			Hashtable<String, Object> htblColNameValue, String strOperator)
-			throws DBEngineException {
+			throws DBEngineException, ClassNotFoundException, IOException {
+		ArrayList<Hashtable<String, Object>> a1 = new ArrayList<Hashtable<String,Object>>();
+		ArrayList<String> types = new ArrayList<String>(2);
+		ArrayList<Object> values = new ArrayList<Object>(2);
+		ArrayList<Table> tables = retrivetable();
+		
+		 FileInputStream fileIn = new FileInputStream("classes/array.ser");
+         ObjectInputStream in = new ObjectInputStream(fileIn);
+       // ArrayList<Table> ttt = (ArrayList<Table>) in.readObject();
+         in.close();
+         fileIn.close();
+		
+		Table table = null ;
+		boolean flag = false;
+		for(int i =0 ; i<tables.size();i++){
+			if(tables.get(i).name.equals(strTableName)){
+				table = tables.get(i);
+				flag = true;
+			}
+		}
+		if(flag){
+			
+			 Enumeration e = htblColNameValue.keys();
+			// System.out.println(e.);
+			    while (e.hasMoreElements()) {
+			      String key = (String) e.nextElement();
+			      //System.out.println(key);
+			      types.add(key);
+			      values.add(htblColNameValue.get(key));
+			    }
+			int numberOfPages = table.pages;
+			//System.out.println(numberOfPages);
+			for(int i =0 ;i<numberOfPages;i++){
+				//System.out.println("test1");
+				Page p= retrivePage("classes/"+strTableName+(i+1));
+				for(int j = 0;j<p.data.size();j++){
+					Hashtable<String, Object> temp = p.data.get(j);
+					  //System.out.println("test");
+						if(strOperator.equals("AND")){
+							//System.out.println("test AND");
+							if(((p.data.get(j).get(types.get(0)).equals(values.get(0)))) &&(p.data.get(j).get(types.get(1)).equals(values.get(1)))) {
+								System.out.println(p.data.get(j).toString()+" is removed");
+								p.data.remove(j);
+								
+								String fileLocation = "classes/"+strTableName+(i+1)+".ser"; //To be Modified
+								
+								FileOutputStream fileOut =
+								         new FileOutputStream(fileLocation);
+								ObjectOutputStream os = new ObjectOutputStream(fileOut);
+								os.writeObject(p);
+								
+							}
+						}else{
+							if(((p.data.get(j).get(types.get(0)).equals(values.get(0)))) || (p.data.get(j).get(types.get(1)).equals(values.get(1))))  {
+								System.out.println(p.data.get(j).toString()+" is removed");
+								p.data.remove(j);
+								System.out.println(p.data.get(j).toString());
+								String fileLocation = "classes/"+strTableName+(i+1)+".ser"; //To be Modified
+								System.out.println(fileLocation);
+								FileOutputStream fileOut =
+								         new FileOutputStream(fileLocation);
+								ObjectOutputStream os = new ObjectOutputStream(fileOut);
+								os.writeObject(p);
+							}
+						}
+						
+		            
+				}
+				
+			}
+		}else{
+			System.out.println("The table "+strTableName+" is Not Exist");
+		}
+		//Page p= retrivePage(strTable+"1");
+		
+		
 
 	}
 
@@ -442,37 +567,31 @@ public void increment(String tbname) throws ClassNotFoundException, IOException{
 			// changed it to student instead of course
 		}
 
-		// selecting
-		//ArrayList<Table> tables = myDB.retrivetable();
-		//for (int i = 0; i < tables.size(); i++) {
-			//System.out.println(tables.get(i).pages);
-			//System.out.println(tables.get(i).name);
-			
-	//	}
+	
         Hashtable<String, Object> stblColNameValue = new Hashtable<String, Object>();
-		stblColNameValue.put("ID", Integer.valueOf("550"));
-		stblColNameValue.put("Age", Integer.valueOf("20"));
+		stblColNameValue.put("ID", Integer.valueOf("2000"));
+		stblColNameValue.put("Name", "Media Engineer");
 
 		long startTime = System.currentTimeMillis();
 		Iterator myIt = myDB
-				.selectFromTable("Student", stblColNameValue, "AND");
+				.selectFromTable("Faculty", stblColNameValue, "OR");
 		long endTime = System.currentTimeMillis();
 		long totalTime = endTime - startTime;
 		System.out.println(totalTime);
 		while (myIt.hasNext()) {
 			System.out.println(myIt.next());
-		}
+}
 
 		// feel free to add more tests
 		Hashtable<String, Object> stblColNameValue3 = new Hashtable<String, Object>();
-		stblColNameValue3.put("Name", "m7");
-		stblColNameValue3.put("Faculty_ID", Integer.valueOf("7"));
+	stblColNameValue3.put("ID", "2000");
+	stblColNameValue3.put("Name", "Media Engineering and Technology Test");
 
 		long startTime2 = System.currentTimeMillis();
 		Iterator myIt2 = myDB
-				.selectFromTable("Major", stblColNameValue3, "AND");
+				.selectFromTable("Faculty", stblColNameValue3, "AND");
 		long endTime2 = System.currentTimeMillis();
-		long totalTime2 = endTime - startTime;
+		long totalTime2 = endTime2 - startTime2;
 		System.out.println(totalTime2);
 		while (myIt2.hasNext()) {
 			System.out.println(myIt2.next());
@@ -480,6 +599,30 @@ public void increment(String tbname) throws ClassNotFoundException, IOException{
 		ArrayList<Table> csv = myDB.retrivetable();
 		csvWriter csWriter = new csvWriter(csv);
 		csWriter.write("data/meta.csv");
+
+		Hashtable<String, Object> ftblColNameValue20 = new Hashtable<String, Object>();
+		ftblColNameValue20.put("ID", Integer.valueOf("2000"));
+		ftblColNameValue20.put("Name", "Media Engineering and Technology Test");
+		myDB.updateTable("Faculty", "1", ftblColNameValue20);
+		
+		//selecting
+		
+		 Hashtable<String, Object> stblColNameValue5 = new Hashtable<String, Object>();
+			stblColNameValue5.put("ID", Integer.valueOf("2000"));
+			stblColNameValue5.put("Name", "Media Engineering and Technology Test");
+
+			long startTime5 = System.currentTimeMillis();
+			Iterator myIt5 = myDB
+					.selectFromTable("Faculty", stblColNameValue5, "AND");
+			long endTime5 = System.currentTimeMillis();
+			long totalTime5 = endTime5 - startTime5;
+			System.out.println(totalTime5);
+			while (myIt5.hasNext()) {
+				System.out.println(myIt5.next());
+			}
+			myDB.deleteFromTable("Faculty", stblColNameValue5, "AND");
 	}
+
+	
 
 }
