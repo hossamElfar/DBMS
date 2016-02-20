@@ -418,7 +418,7 @@ public void increment(String tbname) throws ClassNotFoundException, IOException{
 		myDB.init();
 
 		// creating table "Faculty"
-/*
+
 		Hashtable<String, String> fTblColNameType = new Hashtable<String, String>();
 		fTblColNameType.put("ID", "Integer");
 		fTblColNameType.put("Name", "String");
@@ -621,20 +621,6 @@ public void increment(String tbname) throws ClassNotFoundException, IOException{
 				System.out.println(myIt5.next());
 			}
 			myDB.deleteFromTable("Faculty", stblColNameValue5, "AND");
-			*/
-		 Hashtable<String, Object> stblColNameValue5 = new Hashtable<String, Object>();
-			stblColNameValue5.put("ID", Integer.valueOf("2000"));
-			stblColNameValue5.put("Name", "Media Engineering and Technology Test");
-
-			long startTime5 = System.currentTimeMillis();
-			Iterator myIt5 = myDB
-					.selectFromTable("Faculty", stblColNameValue5, "AND");
-			long endTime5 = System.currentTimeMillis();
-			long totalTime5 = endTime5 - startTime5;
-			System.out.println(totalTime5);
-			while (myIt5.hasNext()) {
-				System.out.println(myIt5.next());
-			}
 	}
 
 	
