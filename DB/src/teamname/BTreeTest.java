@@ -72,7 +72,7 @@ public class BTreeTest implements Serializable{
 		tree.insert(7);
 		tree.insert(8);
 		tree.insert(9);
-		
+	
 		//tree.remove(18);
 		//tree.remove(12);
 		tree.remove(33);
