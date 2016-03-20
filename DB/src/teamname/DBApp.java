@@ -20,6 +20,7 @@ import java.util.Iterator;
 import java.util.Properties;
 import java.util.Set;
 
+import javax.swing.text.StyledEditorKit.BoldAction;
 import javax.xml.crypto.Data;
 
 class DBAppException extends Exception implements Serializable{
@@ -104,8 +105,52 @@ public void increment(String tbname) throws ClassNotFoundException, IOException{
 	}
 
 	public void createIndex(String strTableName, String strColName)
-			throws DBAppException {
-
+			throws DBAppException, ClassNotFoundException, IOException {
+        ArrayList<ArrayList<secondary>> sec =new ArrayList<ArrayList<secondary>>();
+        ArrayList<Table> h = retrivetable();
+        Table t = null;
+        for (int i = 0; i < h.size(); i++) {
+			if(h.get(i).name.equals(strTableName)){
+				t=h.get(i);
+				break;
+			}
+		}
+        int pages=t.pages;
+        for (int i = 0; i <pages; i++) {
+        	Page p= retrivePage("classes/"+strTableName+""+(i+1));
+        	ArrayList<Hashtable<String, Object>> arr = p.data;
+        	for (int j = 0; j < arr.size(); j++) {
+				Object ob=arr.get(j).get(strColName);
+				boolean f = false;
+				if(sec.isEmpty()){
+					ArrayList<secondary> a = new ArrayList<secondary>();
+					secondary s = new secondary(i+1, j, ob);
+					a.add(s);
+					sec.add(a);
+				}else{
+				for (int k = 0; k < sec.size(); k++) {
+					if(sec.get(k).get(0).colName.equals(ob)){
+						secondary s = new secondary(i+1, j, ob);
+						sec.get(k).add(s);
+						f=true;
+					}
+				}
+				if(f==false){
+					ArrayList<secondary> a = new ArrayList<secondary>();
+					secondary s = new secondary(i+1, j, ob);
+					a.add(s);
+					sec.add(a);
+				}
+				}
+			}
+		}
+        String name = strTableName+strColName;
+        String fileLocation = "classes/"+name+".ser"; //To be Modified
+		FileOutputStream fileOut =
+		         new FileOutputStream(fileLocation);
+		ObjectOutputStream os = new ObjectOutputStream(fileOut);
+		os.writeObject(sec);
+		System.out.println("The  "+strColName+" indexed Succesfully");
 	}
 
 	public void insertIntoTable(String strTableName,
@@ -113,10 +158,13 @@ public void increment(String tbname) throws ClassNotFoundException, IOException{
 		Table temp =null;
 		boolean flag = false;
 		ArrayList<Table> tables = retrivetable();
+		int indexOfTable = -1;
 		for (int i = 0; i < tables.size(); i++) {
 			if(tables.get(i).name.equals(strTableName)){
 				temp = tables.get(i);
+				indexOfTable=i;
 				flag = true;
+				break;
 			}
 		}
 		if(flag){
@@ -124,17 +172,38 @@ public void increment(String tbname) throws ClassNotFoundException, IOException{
 			Date date = new Date();
 			System.out.println(dateFormat.format(date));
 			htblColNameValue.put("TouchDate", dateFormat.format(date));
-			saveRecords(strTableName,temp.pages , htblColNameValue);
+			saveRecords(strTableName,temp.pages , htblColNameValue,temp,indexOfTable);
 			System.out.println("The record saved into the table "+strTableName);
 		}else{
 			System.out.println("The table "+strTableName+" is not exist");
 
 		}
+		Table x = tables.get(indexOfTable);
+		ArrayList<String> types=new ArrayList<String>();
+		Enumeration e = x.NameType.keys();
+		// System.out.println(e.);
+		    while (e.hasMoreElements()) {
+		    	String key = (String) e.nextElement();
+		    	 types.add(key);
+		    }
+		    for (int i = 0; i < types.size(); i++) {
+		    	try{
+			    	String cont = strTableName+types.get(i);
+			    	FileInputStream fileIn = new FileInputStream("classes/"+cont+".ser");
+			         ObjectInputStream in = new ObjectInputStream(fileIn);
+			         createIndex(strTableName, types.get(i));
+			         in.close();
+			         fileIn.close();
+			    }catch(Exception j){
+			    	
+			    }
+			}
+		    
 		
-		  
+		  //this.savetable(tables);
 	}
 	
-	public void saveRecords(String name,int page,Hashtable<String, Object> record) throws ClassNotFoundException, IOException{
+	public void saveRecords(String name,int page,Hashtable<String, Object> record,Table temp,int tableIndex) throws ClassNotFoundException, IOException{
 		String nameofpage = "classes/"+name +page;
 		Page content=null;
 		ArrayList<Table> tables = retrivetable();
@@ -156,6 +225,23 @@ public void increment(String tbname) throws ClassNotFoundException, IOException{
 			}
 				Page x = new Page(nameofpage);
 				x.data.add(record);
+				Indecator ind = new Indecator(name, page, x.data.size()-1);
+				//System.out.println(ind.pageNum);
+				String s = null;
+				if(record.get(temp.key) instanceof Integer){
+					 s = ((Integer)record.get(temp.key)).intValue()+"";
+				}else{
+					 s = (String) record.get(temp.key);
+				}
+				//To be modified
+				//System.out.println(s);
+				ArrayList<Table> h = retrivetable();
+				h.get(tableIndex).getBT().insert(s, ind);
+				savetable(h);
+				
+				Indecator test = h.get(tableIndex).getBT().search(s);
+				System.out.println(test.table);
+				System.out.println(test.recordIndex);
 				String fileLocation = "classes/"+nameofpage+".ser"; //To be Modified
 				FileOutputStream fileOut =
 				         new FileOutputStream(fileLocation);
@@ -167,6 +253,22 @@ public void increment(String tbname) throws ClassNotFoundException, IOException{
 			
 			Page y = retrivePage(nameofpage);
 			y.data.add(record);
+			Indecator ind = new Indecator(name, page, y.data.size()-1);
+			//System.out.println(ind.pageNum);
+			String s = null;
+			if(record.get(temp.key) instanceof Integer){
+				 s = ((Integer)record.get(temp.key)).intValue()+"";
+			}else{
+				 s = (String) record.get(temp.key);
+			}
+			//To be modified
+			//System.out.println(s);
+			ArrayList<Table> h = retrivetable();
+			h.get(tableIndex).getBT().insert(s, ind);
+			savetable(h);
+			Indecator test = h.get(tableIndex).getBT().search(s);
+			System.out.println(test.table);
+			System.out.println(test.recordIndex);
 			String fileLocation = nameofpage+".ser"; //To be Modified
 			FileOutputStream fileOut =
 			         new FileOutputStream(fileLocation);
@@ -182,8 +284,25 @@ public void increment(String tbname) throws ClassNotFoundException, IOException{
 					increment(name);
 				}
 			}
+			
 				Page x = new Page(nameofpage);
 				x.data.add(record);
+				Indecator ind = new Indecator(name, page, x.data.size()-1);
+				System.out.println(ind.pageNum);
+				String s = null;
+				if(record.get(temp.key) instanceof Integer){
+					 s = ((Integer)record.get(temp.key)).intValue()+"";
+				}else{
+					 s = (String) record.get(temp.key);
+				}
+				//To be modified
+				//System.out.println(s);
+				ArrayList<Table> h = retrivetable();
+				h.get(tableIndex).getBT().insert(s, ind);
+				savetable(h);
+				Indecator test = h.get(tableIndex).getBT().search(s);
+				System.out.println(test.table);
+				System.out.println(test.recordIndex);
 				String fileLocation = "classes/"+nameofpage+".ser"; //To be Modified
 				FileOutputStream fileOut =
 				         new FileOutputStream(fileLocation);
@@ -379,6 +498,7 @@ public void increment(String tbname) throws ClassNotFoundException, IOException{
 			    }
 			int numberOfPages = table.pages;
 			//System.out.println(numberOfPages);
+			
 			for(int i =0 ;i<numberOfPages;i++){
 				//System.out.println("test1");
 				Page p= retrivePage("classes/"+strTable+(i+1));
@@ -400,6 +520,7 @@ public void increment(String tbname) throws ClassNotFoundException, IOException{
 				}
 				
 			}
+			
 		}else{
 			System.out.println("The table "+strTable+" is Not Exist");
 		}
@@ -418,7 +539,7 @@ public void increment(String tbname) throws ClassNotFoundException, IOException{
 		myDB.init();
 
 		// creating table "Faculty"
-/*
+
 		Hashtable<String, String> fTblColNameType = new Hashtable<String, String>();
 		fTblColNameType.put("ID", "Integer");
 		fTblColNameType.put("Name", "String");
@@ -428,7 +549,7 @@ public void increment(String tbname) throws ClassNotFoundException, IOException{
 		myDB.createTable("Faculty", fTblColNameType, fTblColNameRefs, "ID");
 
 		// creating table "Major"
-
+/*
 		Hashtable<String, String> mTblColNameType = new Hashtable<String, String>();
 		fTblColNameType.put("ID", "Integer");
 		fTblColNameType.put("Name", "String");
@@ -482,12 +603,13 @@ public void increment(String tbname) throws ClassNotFoundException, IOException{
 				scTblColNameRefs, "ID");
 
 		// insert in table "Faculty"
-
+*/
+		
 		Hashtable<String, Object> ftblColNameValue1 = new Hashtable<String, Object>();
-		ftblColNameValue1.put("ID", Integer.valueOf("1"));
-		ftblColNameValue1.put("Name", "Media Engineering and Technology");
+		ftblColNameValue1.put("ID", Integer.valueOf("1004"));
+		ftblColNameValue1.put("Name", "Hossam Ahmed");
 		myDB.insertIntoTable("Faculty", ftblColNameValue1);
-
+/*
 		Hashtable<String, Object> ftblColNameValue2 = new Hashtable<String, Object>();
 		ftblColNameValue2.put("ID", Integer.valueOf("2"));
 		ftblColNameValue2.put("Name", "Management Technology");
@@ -501,7 +623,7 @@ public void increment(String tbname) throws ClassNotFoundException, IOException{
 		}
 
 		// insert in table "Major"
-
+/*
 		Hashtable<String, Object> mtblColNameValue1 = new Hashtable<String, Object>();
 		mtblColNameValue1.put("ID", Integer.valueOf("1"));
 		mtblColNameValue1.put("Name", "Computer Science & Engineering");
@@ -621,7 +743,7 @@ public void increment(String tbname) throws ClassNotFoundException, IOException{
 				System.out.println(myIt5.next());
 			}
 			myDB.deleteFromTable("Faculty", stblColNameValue5, "AND");
-			*/
+			
 		 Hashtable<String, Object> stblColNameValue5 = new Hashtable<String, Object>();
 			stblColNameValue5.put("ID", Integer.valueOf("2000"));
 			stblColNameValue5.put("Name", "Media Engineering and Technology Test");
@@ -632,9 +754,18 @@ public void increment(String tbname) throws ClassNotFoundException, IOException{
 			long endTime5 = System.currentTimeMillis();
 			long totalTime5 = endTime5 - startTime5;
 			System.out.println(totalTime5);
-			while (myIt5.hasNext()) {
+			while (myIt5.hasNext()){
 				System.out.println(myIt5.next());
 			}
+			
+		 myDB.createIndex("Faculty", "Name");
+		 FileInputStream fileIn = new FileInputStream("classes/FacultyName.ser");
+         ObjectInputStream in = new ObjectInputStream(fileIn);
+         ArrayList<ArrayList<Object>> test2 = (ArrayList<ArrayList<Object>>) in.readObject();
+         System.out.println(((secondary)test2.get(260).get(0)).pageNum);
+         in.close();
+         fileIn.close();
+         */
 	}
 
 	

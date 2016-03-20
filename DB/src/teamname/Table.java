@@ -10,12 +10,25 @@ import java.util.Hashtable;
 
 import javax.swing.text.html.HTMLDocument.Iterator;
 
-public class Table implements Serializable {
+public class Table  implements Serializable {
 	String name;
 	Hashtable<String, String> NameType;
 	Hashtable<String, String> refrences;
 	String key;
 	int pages;
+	public BTree<String, Indecator> getBT() {
+		return BT;
+	}
+
+
+
+	public void setBT(BTree<String, Indecator> bT) {
+		BT = bT;
+	}
+
+
+
+	BTree<String, Indecator> BT;
 	public Table(String name, Hashtable<String, String> nameType,
 			Hashtable<String, String> refrences, String key) {
 		pages=0;
@@ -24,6 +37,7 @@ public class Table implements Serializable {
 		NameType = nameType;
 		this.refrences = refrences;
 		this.key = key;
+		this.BT = new BTree<String, Indecator>(); 
 	}
 
 	

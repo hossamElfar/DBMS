@@ -28,4 +28,8 @@
 <fullyQualifiedTypeName name="teamname.csvWriter"/>
 <fullyQualifiedTypeName name="java.util.Hashtable"/>
 <fullyQualifiedTypeName name="java.lang.Integer"/>
+<fullyQualifiedTypeName name="teamname.BPlusTree"/>
+<fullyQualifiedTypeName name="teamname.BPTree.BPTEntry"/>
+<fullyQualifiedTypeName name="teamname.BPTree"/>
+<fullyQualifiedTypeName name="java.io.StringWriter"/>
 </qualifiedTypeNameHistroy>
